@@ -33,21 +33,34 @@
 using namespace std;
 int main(int argc, char **argv)
 {
+    // définir le nombre de population souhaité à passer en paramètre
     int popsize = stoi(argv[1]);
+    // définir la dimension souhaité à passer en paramètre
     int dimensions = stoi(argv[2]);
 
+    // F1 = 0.25;
     float F1 = strtof(argv[3], NULL);
+    // F2 = 0.25;
     float F2 = strtof(argv[4], NULL);
+    // F3 = 0.2;
     float F3 = strtof(argv[5], NULL);
+    // F4 = 0.2;
     float F4 = strtof(argv[6], NULL);
 
+    // définir le max de bounds pour la function choisi à passer en paramètre
     float maxB = strtof(argv[7], NULL);
+    // définir le min de bounds pour la function choisi à passer en paramètre
     float minB = strtof(argv[8], NULL);
     
     bool isCrash = strtof(argv[9], NULL);
     
+    // initialise le nombre de générations à 0
     int generations = 0;
     
+    // permet de calculer le nombre de génération en fonction de la pop size
+    // pour une dimension de 10 et une population de 50 : (10x10000) / 50 = 2000
+    // cela nous permets d'avoir en permanance les mêmes paramètres afin de fiabliser
+    // nos tests
     generations = (dimensions * 10000) / popsize;
      std::cout << "generations:  " << generations << std::endl;
     // create the min and max bounds for the search space.
@@ -89,10 +102,11 @@ int main(int argc, char **argv)
         if(isCrash){
             std::cout << resultF - resultS << " milliseconds for iter\n" << std::endl;
         }
-        
+        // cudaFree -> permet de libérer la mémoire
         cudaFree(x.bias);
         cudaFree(d_x);
     }
+    // utilisation de ctime afin de calculer le temps d'éxécution de notre algo
     std::time_t resultFF = std::time(nullptr);
     std::cout << std::endl;
     std::cout << resultFF - resultSS << " milliseconds since start\n" << std::endl;

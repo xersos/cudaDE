@@ -119,6 +119,8 @@ public:
     // @param mutantConstant - the scale on mutant changes (F in literature) given [0,2]
     //              default = 0.5
     // @param func - the cost function to minimize.
+    // @param F1, F2, F3, F4 - repris du document A Unified Differential Evolution Algorithm for
+    // Global Optimization
     DifferentialEvolution(int PopulationSize, int NumGenerations, int Dimensions,
                 float crossoverConstant, float mutantConstant,
                 float *minBounds, float *maxBounds, float F1, float F2, float F3, float F4);

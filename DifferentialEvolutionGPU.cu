@@ -305,6 +305,8 @@ __global__ void evolutionKernel(float *d_target,
     do { e = curand(state) % popSize; } while (e == idx || e == a || e == b || e == c || e == d);
     j = curand(state) % dim;
 
+    // C'est valeur ont été trouvé dans l'article A Unified Differential Evolution Algorithm for
+    // Global Optimization
     F1 = 0.25;
     F2 = 0.25;
     F3 = 0.2; 
@@ -323,33 +325,6 @@ __global__ void evolutionKernel(float *d_target,
     for (int k = 1; k <= dim; k++) {
         if ((curand(state) % 1000) < CR || k==dim) {
             // trial vector param comes from vector plus weighted differential
-            // Mutation strategies
-            //DE/rand/1
-            //d_trial[(idx*dim)+j] = d_target[(a*dim)+j] + (F * (d_target[(b*dim)+j] - d_target[(c*dim)+j]));
-            //DE/rand/2
-            //d_trial[(idx*dim)+j] = d_target[(a*dim)+j] + (F * (d_target[(b*dim)+j] - d_target[(c*dim)+j]) + (F * (d_target[(d*dim)+j] - d_target[(e*dim)+j]));
-            //DE/best/1
-            //d_trial[(idx*dim)+j] = d_target[(best*dim)+j] + (F * (d_target[(a*dim)+j] - d_target[(b*dim)+j]));
-            //DE/best/2
-            //d_trial[(idx*dim)+j] = d_target[(best*dim)+j] + (F * (d_target[(a*dim)+j] - d_target[(b*dim)+j]) + (F * (d_target[(c*dim)+j] - d_target[(d*dim)+j]));
-            //DE/current-to-best/1
-            //d_trial[(idx*dim)+j] = d_target[(idx*dim)+j] + (Fcr * (d_target[(best*dim)+j] - d_target[(idx*dim)+j]) + (F * (d_target[(a*dim)+j] - d_target[(b*dim)+j])); 
-            //DE/current-to-best/2
-            //d_trial[(idx*dim)+j] = d_target[(idx*dim)+j] + (Fcr * (d_target[(best*dim)+j] - d_target[(idx*dim)+j]) + (F * (d_target[(a*dim)+j] - d_target[(b*dim)+j]) + (F * (d_target[(c*dim)+j] - d_target[(d*dim)+j])); 
-            //DE/current-to-rand/1
-            //d_trial[(idx*dim)+j] = d_target[(idx*dim)+j] + (Fcr * (d_target[(a*dim)+j] - d_target[(idx*dim)+j]) + (F * (d_target[(b*dim)+j] - d_target[(c*dim)+j]));
-
-            // Unified differential evolution
-            // Where if F1 = 0, F2 = 1, -------, F4 = 0  -> DE/rand/1
-            // Where if F1 = 0, F2 = 1, F3 = F4, ------- -> DE/rand/2 
-            // Where if F1 = 1, F2 = 0, -------, F4 = 0  -> DE/best/1 
-            // Where if F1 = 1, F2 = 0, F3 = F4, ------- -> DE/best/2 
-            // Where if ------, F2 = 0, -------, F4 = 0  -> DE/current-to-best/1 
-            // Where if F2 = 0, F3 = F4         -> DE/current-to-best/2 
-            // Where if F1 = 0, F4 = 0          -> DE/current-to-rand/1 
-            // Where if F1 = 0, F3 = F4         -> DE/current-to-rand/2 
-            // Where if F2 = 1, F4 = 0          -> DE/rand-to-best/1
-            // Where if F2 = 1, F3 = F4         -> DE/rand-to-best/2
             d_trial[(idx*dim)+j] = d_target[(idx*dim)+j] + 
                                     (F1 * (d_target[(bestIdx*dim)+j] - d_target[(idx*dim)+j])) + 
                                     (F2 * (d_target[(a*dim)+j]    - d_target[(idx*dim)+j])) + 
@@ -357,14 +332,13 @@ __global__ void evolutionKernel(float *d_target,
                                     (F4 * (d_target[(d*dim)+j]    - d_target[(e*dim)+j]));
 
             if(&d_trial[(idx*dim)+j] <= &d_min[0] || &d_trial[(idx*dim)+j] >= &d_max[0] ){
-              //printf("out of bounds");
               d_trial[(idx*dim)+j] = d_target[(idx*dim) + j];
             }
         } else {
             d_trial[(idx*dim)+j] = d_target[(idx*dim)+j];
-        } // end if else for creating trial vector
+        }
         j = (j+1) % dim;
-    } // end for loop through parameters
+    }
     float score = 0;
     if(COST_SELECTOR == SCHWEFEL)
     {
